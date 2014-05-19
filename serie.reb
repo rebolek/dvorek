@@ -72,7 +72,7 @@ etc: func [ "Create block from example values"
 serie: func [
 	"Create block form example values"
 	block [block!] "Example block" ;it's not 'example' - find better word
-	/local out val start-val end-val tmp step from
+	/local out val start-val end-val tmp step from cond
 ][
 	out: make block! 100
 	parse block [
@@ -103,16 +103,25 @@ serie: func [
 			)
 		|	'etc (value: make block! 4)
 			some [set tmp number! (append value tmp)]
-			set var word!
+			set cond word!
 			set length [block! | integer!]
 			(
-				if equal? var '.. [var: first [<=]]
-				if not find [x length] var [length: reduce [var length]]
+				cond: switch cond [
+					.. 		[quote <=]
+					to 		[quote <]
+					thru 	[quote <=]
+				]
+				if not find [x length] cond [length: reduce [cond length]]
 				append out do reduce ['etc value length]
 			)
-		|	set start-val [word! | integer!] '.. set end-val [word! | integer!] opt ['step set step integer!](
+		|	set start-val [word! | integer!] set cond [ '.. | 'to  | 'thru ] set end-val [word! | integer!] opt ['step set step integer!](
 				if word? start-val [start-val: get start-val]
 				if word? end-val [end-val: get end-val]
+				end-val: switch cond [
+					.. 		[end-val]
+					to 		[end-val - 1]
+					thru 	[end-val]
+				]
 				for i start-val end-val either start-val > end-val [negate step][step] [append out i]
 			)
 		|	set val integer! (append out val)
